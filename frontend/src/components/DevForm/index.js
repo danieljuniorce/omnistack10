@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 
@@ -26,18 +27,29 @@ function DevForm({ setDevs, devs }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const response = await api.post(`devs`, {
-      github_username,
-      techs,
-      latitude,
-      longitude
-    });
+    try {
+      devs.forEach(dev => {
+        if (dev.github_username === github_username) {
+          // eslint-disable-next-line no-unused-expressions
+          stop;
+        }
+      });
 
-    setGithubUsername("");
-    setTechs("");
+      const response = await api.post(`devs`, {
+        github_username,
+        techs,
+        latitude,
+        longitude
+      });
 
-    setDevs([...devs, response.data]);
-    return;
+      setGithubUsername("");
+      setTechs("");
+
+      setDevs([...devs, response.data]);
+      return;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return (
