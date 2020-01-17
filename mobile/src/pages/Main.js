@@ -9,10 +9,11 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import api from "../service/api";
+import { connect, disconect, subscribeToNewDevs } from "../service/socket";
 
 function Main({ navigation }) {
   const [devs, setDevs] = useState([]);
-  const [techs, setTechs] = useState([]);
+  const [techs, setTechs] = useState("");
   const [currentRegion, setCurrentRegion] = useState(null);
 
   useEffect(() => {
@@ -38,6 +39,18 @@ function Main({ navigation }) {
     loadInitialPosition();
   }, []);
 
+  useEffect(() => {
+    subscribeToNewDevs(dev => setDevs([...devs, dev]));
+  }, [devs]);
+
+  function setupWebSocket() {
+    disconect();
+
+    const { latitude, longitude } = currentRegion;
+
+    connect({ latitude, longitude, techs });
+  }
+
   async function loadDevs() {
     const { latitude, longitude } = currentRegion;
 
@@ -48,8 +61,9 @@ function Main({ navigation }) {
         techs
       }
     });
-    console.log(response.data);
+
     setDevs(response.data);
+    setupWebSocket();
   }
 
   function handleRegionChanged(region) {
@@ -106,7 +120,7 @@ function Main({ navigation }) {
           autoCapitalize="words"
           autoCorrect={false}
           value={techs}
-          onChangeText={setTechs}
+          onChangeText={text => setTechs(text)}
         />
         <TouchableOpacity onPress={loadDevs} style={styles.loadButton}>
           <MaterialIcons name="my-location" size={20} color="#fff" />
